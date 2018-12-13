@@ -82,6 +82,7 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 	AutoStat                         bool
+	PadStart                         string
 
 	// Default width for the time box.
 	UnitsWidth   int
@@ -119,6 +120,20 @@ func (pb *ProgressBar) Start() *ProgressBar {
 		pb.ShowPercent = false
 		pb.AutoStat = false
 	}
+
+	// pad new lines
+	// this will break multi-bar functionality
+	// but shiftleft isnt using it
+	if pb.PadStart != "" {
+		if pb.Output != nil {
+			fmt.Fprintf(pb.Output, pb.PadStart)
+		} else if pb.Callback != nil {
+			pb.Callback(pb.PadStart)
+		} else if !pb.NotPrint {
+			fmt.Print(pb.PadStart)
+		}
+	}
+
 	if !pb.ManualUpdate {
 		pb.Update() // Initial printing of the bar before running the bar refresher.
 		go pb.refresher()
@@ -411,11 +426,11 @@ func (pb *ProgressBar) write(total, current int64) {
 	case isFinish:
 		return
 	case pb.Output != nil:
-		fmt.Fprint(pb.Output, "\r"+out+end)
+		fmt.Fprint(pb.Output, ClearLinePrefixString+out+end+ClearLineSuffixString)
 	case pb.Callback != nil:
 		pb.Callback(out + end)
 	case !pb.NotPrint:
-		fmt.Print("\r" + out + end)
+		fmt.Print(ClearLinePrefixString + out + end + ClearLineSuffixString)
 	}
 }
 

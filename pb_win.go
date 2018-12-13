@@ -3,11 +3,16 @@
 package pb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -70,12 +75,41 @@ type (
 
 // terminalWidth returns width of the terminal.
 func terminalWidth() (width int, err error) {
-	var info consoleScreenBufferInfo
-	_, _, e := syscall.Syscall(procGetConsoleScreenBufferInfo.Addr(), 2, uintptr(syscall.Stdout), uintptr(unsafe.Pointer(&info)), 0)
-	if e != 0 {
-		return 0, error(e)
+	if RequireWindowsCalls {
+		var info consoleScreenBufferInfo
+		_, _, e := syscall.Syscall(procGetConsoleScreenBufferInfo.Addr(), 2, uintptr(syscall.Stdout), uintptr(unsafe.Pointer(&info)), 0)
+		if e != 0 {
+			return 0, error(e)
+		}
+		return int(info.dwSize.X) - 1, nil
 	}
-	return int(info.dwSize.X) - 1, nil
+	// set a default incase we exit on an error
+	width = 80
+	if !UseSTTYWindows {
+		err = nil
+		return
+	}
+	// call stty to get terminal information
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Millisecond*20)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, "stty", "size").Output()
+	if err != nil {
+		// give default
+		return
+	}
+	outputSep := strings.Split(strings.TrimSpace(string(output)), " ")
+	if len(outputSep) != 2 {
+		// give default
+		return
+	}
+	value, err := strconv.ParseUint(outputSep[0], 10, 64)
+	if err != nil {
+		// give default
+		return
+	}
+	// oh wow a useful result
+	width = int(value)
+	return
 }
 
 func getCursorPos() (pos coordinates, err error) {
