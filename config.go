@@ -37,6 +37,7 @@ func init() {
 			// we are done
 			RequireWindowsCalls = true
 			ClearLinePrefixString = "\r"
+			ClearLineSuffixString = ""
 			return
 		}
 		// since the environment is telling
@@ -59,6 +60,7 @@ func init() {
 	case "solaris", "darwin", "linux", "dragonfly", "freebsd", "netbsd", "openbsd", "plan9":
 		if isBASHLike(shell) {
 			ClearLinePrefixString = "\r"
+			ClearLineSuffixString = ""
 			return
 		}
 		// oh you arent using `bash`, `dash`, or `sh`
@@ -68,6 +70,7 @@ func init() {
 		//
 		// this will likely get more diverse as time goes on
 		ClearLinePrefixString = fmt.Sprintf("%c[%dA%c[K\r", 27, 1, 27)
+		ClearLineSuffixString = "\n"
 		return
 	default:
 		panic(fmt.Sprintf("we not not yet support %s", runtime.GOOS))
@@ -88,6 +91,9 @@ func isBASHLike(shell string) bool {
 
 // ClearLinePrefixString is used to set the clear prefix
 var ClearLinePrefixString string
+
+// ClearLineSuffixString is used to set the clear suffix
+var ClearLineSuffixString string
 
 // RequireWindowsCalls is done to check
 // if while we maybe in windows, we have

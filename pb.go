@@ -411,11 +411,11 @@ func (pb *ProgressBar) write(total, current int64) {
 	case isFinish:
 		return
 	case pb.Output != nil:
-		fmt.Fprint(pb.Output, ClearLinePrefixString+out+end)
+		fmt.Fprint(pb.Output, ClearLinePrefixString+out+end+ClearLineSuffixString)
 	case pb.Callback != nil:
 		pb.Callback(out + end)
 	case !pb.NotPrint:
-		fmt.Print(ClearLinePrefixString + out + end)
+		fmt.Print(ClearLinePrefixString + out + end + ClearLineSuffixString)
 	}
 }
 
