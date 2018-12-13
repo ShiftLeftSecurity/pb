@@ -67,7 +67,7 @@ func init() {
 		// `csh`, `tcsh`, and `fish`
 		//
 		// this will likely get more diverse as time goes on
-		ClearLinePrefixString = fmt.Sprintf("%c[%dA%c[2K\r", 27, 1, 27)
+		ClearLinePrefixString = fmt.Sprintf("%c[%dA%c[K\r", 27, 1, 27)
 		return
 	default:
 		panic(fmt.Sprintf("we not not yet support %s", runtime.GOOS))
