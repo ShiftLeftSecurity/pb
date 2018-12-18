@@ -79,6 +79,10 @@ func init() {
 
 // isBASHLike checks for a bash like shells which are the most common
 func isBASHLike(shell string) bool {
+	if os.Getenv("TERMINATOR_UUID") != "" {
+		// don't treat terminator like BASH
+		return false
+	}
 	shell = strings.TrimSpace(shell)
 	// dash, bash, and sh are mostly identical for our purposes
 	return strings.Contains(shell, "bash") ||
