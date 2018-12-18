@@ -70,7 +70,7 @@ func init() {
 		//
 		// this will likely get more diverse as time goes on
 		ClearLinePrefixString = fmt.Sprintf("%c[%dA%c[K\r", 27, 1, 27)
-		ClearLineSuffixString = "\n"
+		ClearLineSuffixString = fmt.Sprintf("%c[1i\n", 27)
 		return
 	default:
 		panic(fmt.Sprintf("we not not yet support %s", runtime.GOOS))
@@ -79,6 +79,10 @@ func init() {
 
 // isBASHLike checks for a bash like shells which are the most common
 func isBASHLike(shell string) bool {
+	if os.Getenv("TERMINATOR_UUID") != "" {
+		// don't treat terminator like BASH
+		return false
+	}
 	shell = strings.TrimSpace(shell)
 	// dash, bash, and sh are mostly identical for our purposes
 	return strings.Contains(shell, "bash") ||
